@@ -1,0 +1,9 @@
+PySide6 
+scikit-learn 
+numpy 
+pypdf 
+python-docx 
+llama-cpp-python
+python-pptx 
+openpyxl 
+pandas
