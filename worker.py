@@ -246,7 +246,7 @@ def check_local_model_ready() -> Tuple[bool, List[str]]:
     return len(missing) == 0, missing
 
 def download_local_model(model_filename: str) -> Generator[str, None, None]:
-    """Downloads the GGUF model."""
+    """Downloads the GGUF model with progress updates."""
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     
     url = CHAT_MODEL_URL
@@ -256,10 +256,39 @@ def download_local_model(model_filename: str) -> Generator[str, None, None]:
     yield f"   Source: {url}"
 
     try:
-        def reporthook(block_num, block_size, total_size):
-            pass 
-        urllib.request.urlretrieve(url, dest, reporthook)
-        
+        # We use urlopen with chunked reading to yield progress
+        with urllib.request.urlopen(url) as response:
+            total_size = int(response.info().get('Content-Length', -1))
+            
+            with open(dest, 'wb') as f:
+                downloaded = 0
+                block_size = 8192 * 8  # 64KB buffer
+                last_percent = -1
+                
+                while True:
+                    buffer = response.read(block_size)
+                    if not buffer:
+                        break
+                    
+                    f.write(buffer)
+                    downloaded += len(buffer)
+                    
+                    # Calculate progress
+                    if total_size > 0:
+                        percent = int(downloaded * 100 / total_size)
+                        # Yield updates every 1% to prevent UI flooding
+                        if percent > last_percent:
+                            mb_down = downloaded / (1024 * 1024)
+                            mb_total = total_size / (1024 * 1024)
+                            # The 'Downloading:' prefix is KEY for app.py to overwrite the line
+                            yield f"Downloading: {percent}% ({mb_down:.1f}MB / {mb_total:.1f}MB)"
+                            last_percent = percent
+                    else:
+                        # Fallback if Content-Length header is missing
+                        if downloaded % (1024 * 1024 * 5) == 0: # Every 5MB
+                            mb_down = downloaded / (1024 * 1024)
+                            yield f"Downloading: {mb_down:.1f}MB"
+
         if dest.exists() and dest.stat().st_size > 1000:
              yield f"✅ Download Complete: {model_filename}"
         else:
