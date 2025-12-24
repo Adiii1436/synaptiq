@@ -36,7 +36,7 @@ QFrame#Sidebar {{
 }}
 QPushButton#SidebarBtn {{
     text-align: left;
-    padding-left: 15px;
+    padding: 12px 15px;
     border: none;
     background-color: transparent;
     color: {COLOR_TEXT_SECONDARY};
@@ -165,10 +165,10 @@ class MainWindow(QMainWindow):
         nav_lbl.setStyleSheet(f"font-size: 11px; font-weight: bold; color: {COLOR_TEXT_SECONDARY}; margin-top: 10px;")
         sidebar_layout.addWidget(nav_lbl)
 
-        self.btn_ai = self.create_sidebar_btn("  > AI SEMANTIC CLUSTER", "ai")
+        self.btn_ai = self.create_sidebar_btn("🗣️ AI SEMANTIC CLUSTER", "ai")
         self.btn_ai.setChecked(True) # Default
-        self.btn_ext = self.create_sidebar_btn("  > FILE EXTENSION", "type")
-        self.btn_date = self.create_sidebar_btn("  > DATE MODIFIED", "date")
+        self.btn_ext = self.create_sidebar_btn("📁 FILE EXTENSION", "type")
+        self.btn_date = self.create_sidebar_btn("🗓 DATE MODIFIED", "date")
 
         sidebar_layout.addWidget(self.btn_ai)
         sidebar_layout.addWidget(self.btn_ext)
@@ -258,7 +258,7 @@ class MainWindow(QMainWindow):
         btn.setObjectName("SidebarBtn")
         btn.setCursor(Qt.PointingHandCursor) # type: ignore
         btn.setCheckable(True)
-        btn.setFixedHeight(40)
+        btn.setFixedHeight(45)
         btn.clicked.connect(lambda: self.change_mode(btn, mode))
         return btn
 
