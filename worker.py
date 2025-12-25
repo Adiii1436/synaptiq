@@ -1,42 +1,31 @@
 import os
-import shutil
 import numpy as np
 import urllib.request
 from pathlib import Path
 from typing import List, Generator, Tuple
+from utilities.helper import optional_import
+from constants import (
+    CHAT_MODEL_PATH, 
+    CHAT_MODEL_URL, 
+    CHAT_MODEL_FILENAME, 
+    EMBED_MODEL_NAME, 
+    MODEL_DIR
+)
 
-from constants import CHAT_MODEL_PATH, CHAT_MODEL_URL, CHAT_MODEL_FILENAME, EMBED_MODEL_NAME, MODEL_DIR
-
-# --- AI IMPORTS ---
 try:
-    # Fast, Native Embeddings (The Speed Upgrade)
     from sentence_transformers import SentenceTransformer
-    
-    # Clustering
     from sklearn.cluster import AgglomerativeClustering
-    
-    # Local LLM for Naming (The GGUF Model)
-    from llama_cpp import Llama # type: ignore
-    
-    # Text Extraction
-    import pypdf
-    from docx import Document
-    try:
-        from pptx import Presentation
-    except ImportError:
-        Presentation = None
-    try:
-        import openpyxl
-    except ImportError:
-        openpyxl = None
-    
+    from llama_cpp import Llama
     AI_AVAILABLE = True
 except ImportError as e:
     print(f"AI Import Error: {e}")
     AI_AVAILABLE = False
+    
+pypdf = optional_import("pypdf")
+Document = optional_import("docx", "Document")
+Presentation = optional_import("pptx", "Presentation")
+openpyxl = optional_import("openpyxl")
 
-
-# Global Instances (Singleton Pattern)
 _embed_instance = None
 _chat_instance = None
 
@@ -140,13 +129,13 @@ def generate_embedding(content: str) -> List[float]:
     
     try:
         model = get_embed_model()
-        clean_content = content[:1000].replace('\n', ' ').strip()
+        clean_content = content[:1500].replace('\n', ' ').strip()
         
         if not clean_content: 
             return [0.0] * 384 # MiniLM dimension is 384
             
         # .encode returns a numpy array, convert to list
-        vector = model.encode(clean_content).tolist()
+        vector = model.encode(clean_content, batch_size=32, show_progress_bar=False).tolist()
         return vector
             
     except Exception as e:
@@ -195,9 +184,9 @@ def get_smart_folder_name(files_in_cluster: List[Path], file_texts: List[str]) -
     try:
         llm = get_chat_model()
 
-        # Create a prompt with previews of 5 files
+        # Create a prompt with previews of 7 files
         file_previews = []
-        for i, f in enumerate(files_in_cluster[:5]): 
+        for i, f in enumerate(files_in_cluster[:7]): 
             content_preview = file_texts[i][:150].replace('\n', ' ') 
             file_previews.append(f"- {f.name}: {content_preview}...")
 

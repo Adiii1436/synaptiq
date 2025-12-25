@@ -3,6 +3,7 @@ scikit-learn
 numpy 
 pypdf 
 python-docx 
+sentence_transformers
 llama-cpp-python
 python-pptx 
 openpyxl 

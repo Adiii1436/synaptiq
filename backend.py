@@ -7,7 +7,6 @@ from PySide6.QtCore import QThread, Signal
 import worker as backend
 
 class OrganizerWorker(QThread):
-    # Signals to update UI
     log_signal = Signal(str)
     progress_signal = Signal(float)
     stats_signal = Signal(int, int, int) # total, processed, groups
